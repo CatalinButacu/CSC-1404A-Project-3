@@ -1,0 +1,149 @@
+C51 COMPILER V9.59.0.0   UART0                                                             02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART0
+OBJECT MODULE PLACED IN .\Objects\uart0.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\uart0.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\
+                    -Include) DEBUG OBJECTEXTEND PRINT(.\Listings\uart0.lst) TABS(2) OBJECT(.\Objects\uart0.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // declaratii SFR
+   2          #include <uart0.h>
+   3          #include <osc.h>
+   4          #include <timer.h>
+   5          
+   6          //******************************************************************************************
+   7          int UART0_Init(unsigned char mode, long int baudrate){  // initializare UART0 (mod si baudrate)
+   8   1      
+   9   1        unsigned char SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  10   1          
+  11   1        SFRPAGE = LEGACY_PAGE;
+  12   1        
+  13   1        if(mode == EIGHT_BIT){
+  14   2          SCON0 = 0x52;             // 1001 0010
+  15   2        }
+  16   1        else if(mode == NINE_BIT){  
+  17   2          SCON0 =  0xD2;              // 1101 0010
+  18   2        }
+  19   1        else return 0;              // mod eronat
+  20   1        
+  21   1        SSTA0 = 0x0F;   // 0000 1111 Timer 4 pentru Tx si Rx
+  22   1      
+  23   1        SFRPAGE = TMR4_PAGE;
+  24   1      
+  25   1        switch (baudrate){
+  26   2      #if (OSC==XOSC)
+                  case 9600:  TMR4=RCAP4=0xFF5D;
+                        break;
+                  case 19200: TMR4=RCAP4=0xFFAF;
+                        break;
+                  case 38400: TMR4=RCAP4=0xFFD7;
+                        break;
+                  case 115200:TMR4=RCAP4=0xFFF2;
+                        break;
+              
+              #elif (OSC==IOSC_MAX)
+  37   2      
+  38   2          case 9600:  TMR4=RCAP4=0xFF60;
+  39   2                break;
+  40   2          case 19200: TMR4=RCAP4=0xFFB0;
+  41   2                break;
+  42   2          case 38400: TMR4=RCAP4=0xFFD8;
+  43   2                break;
+  44   2          case 115200:TMR4=RCAP4=0xFFF3;
+  45   2                break;
+  46   2      
+  47   2      #elif (OSC==IOSC_MIN)
+                  case 9600:  TMR4=RCAP4=0xFFEC;
+                        break;
+                  case 19200: TMR4=RCAP4=0xFFF6;
+                        break;
+                  case 38400: TMR4=RCAP4=0xFFFB;
+                        break;
+                  case 115200: return 0;
+C51 COMPILER V9.59.0.0   UART0                                                             02/28/2024 20:32:39 PAGE 2   
+
+              
+              #endif
+  57   2      
+  58   2          default:  return 0;     // wrong baudrate
+  59   2        }
+  60   1                          //Stop Timer4; Clear TF4;
+  61   1        TMR4CN = 0x00;                      // TF4 EXF4 - - EXEN4 TR4 C/T4 CP/RL4 
+  62   1                          // use SYSCLK as timebase
+  63   1                          // Stop Timer4; Clear TF4;
+  64   1        TMR4CF = 0x08;            // - - - T4M1 T4M0 TOG4 T3O4 DCEN
+  65   1        TR4 = 1;                            // start Timer4
+  66   1      
+  67   1        SFRPAGE = SFRPAGE_save;
+  68   1        return 1;
+  69   1      }
+  70          
+  71          //******************************************************************************************
+  72          void UART0_Putch(unsigned char ch){   // transmisie caracter
+  73   1        unsigned char SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  74   1        SFRPAGE = LEGACY_PAGE;  
+  75   1      
+  76   1        while(!TI0);
+  77   1        TI0 = 0;
+  78   1        SBUF0 = ch;
+  79   1      
+  80   1        SFRPAGE = SFRPAGE_save;
+  81   1      }
+  82          
+  83          //******************************************************************************************
+  84          void UART0_Putstr(unsigned char *ptr){    // transmisie sir de caractere
+  85   1        while(*ptr) UART0_Putch(*ptr++);
+  86   1      }
+  87          
+  88          //******************************************************************************************
+  89          unsigned char UART0_Getch(unsigned char echo){  // receptie caracter (cu sau fara retransmisie in ecou)
+  90   1        unsigned char ch, SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  91   1        
+  92   1        SFRPAGE = LEGACY_PAGE;  
+  93   1      
+  94   1        while(!RI0);
+  95   1        RI0=0;
+  96   1        ch = SBUF0;
+  97   1        
+  98   1        if(echo){
+  99   2          while (!TI0);
+ 100   2          TI0=0;
+ 101   2          SBUF0 = ch;
+ 102   2        }
+ 103   1        return ch;
+ 104   1      }
+ 105          
+ 106          //******************************
+ 107          // Verificare receptie caracter
+ 108          //******************************
+ 109          unsigned char UART0_Check(void){
+ 110   1        unsigned char check, SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+ 111   1        SFRPAGE = LEGACY_PAGE;  
+ 112   1      
+ 113   1        if(RI0) check = 1;          // testeaza daca s-a primit un nou caracter pe linia seriala
+ 114   1        else check = 0;
+ 115   1        
+ 116   1        SFRPAGE = SFRPAGE_save; // reface pagina initiala
+C51 COMPILER V9.59.0.0   UART0                                                             02/28/2024 20:32:39 PAGE 3   
+
+ 117   1      
+ 118   1        return check;             // returneaza rezultatul testului
+ 119   1      }
+ 120          
+ 121          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    266    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----       9
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

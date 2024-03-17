@@ -1,0 +1,249 @@
+C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART1
+OBJECT MODULE PLACED IN .\Objects\uart1.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\uart1.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\
+                    -Include) DEBUG OBJECTEXTEND PRINT(.\Listings\uart1.lst) TABS(2) OBJECT(.\Objects\uart1.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // declaratii SFR
+   2          #include <uart1.h>
+   3          #include <osc.h>
+   4          #include <timer.h>
+   5          
+   6          //******************************************************************************************
+   7          int UART1_Init(unsigned char mode, long int baudrate){  // initializare UART1 (mod si baudrate)
+   8   1      
+   9   1      // initializeaza UART1 in mod asincron, cu 8 biti/caracter, cu viteza de 9600 Baud
+  10   1        unsigned char SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  11   1          
+  12   1        SFRPAGE = UART1_PAGE;
+  13   1        
+  14   1        if(mode == EIGHT_BIT){
+  15   2          SCON1 = 0x40;             // 0100 0000
+  16   2        }
+  17   1        else if(mode == NINE_BIT){  
+  18   2          SCON1 =  0xC0;              // 1100 0000
+  19   2        }
+  20   1        else return 0;              // mod eronat
+  21   1        
+  22   1        SFRPAGE = LEGACY_PAGE;
+  23   1      
+  24   1        switch (baudrate){
+  25   2      #if (OSC==XOSC)
+                  case 9600:  TL1=TH1=0x93;
+                              CKCON |= 0x00;  // Timer 1 source = SYSCLK/12
+                              break;
+                  case 19200: TL1=TH1=0x5D;
+                              CKCON |= 0x01;  // Timer 1 source = SYSCLK/4
+                              break;
+                  case 38400: TL1=TH1=0xAF;
+                              CKCON |= 0x01;  // Timer 1 source = SYSCLK/4
+                              break;
+                  case 115200:TL1=TH1=0x93;
+                              CKCON |= 0x10;  // Timer 1 source = SYSCLK
+                              break;
+              
+              #elif (OSC==IOSC_MAX)
+  40   2      
+  41   2          case 9600:  TL1=TH1=0x96;
+  42   2                      CKCON |= 0x00;  // Timer 1 source = SYSCLK/12
+  43   2                      break;
+  44   2          case 19200: TL1=TH1=0x60;
+  45   2                      CKCON |= 0x01;  // Timer 1 source = SYSCLK/4
+  46   2                      break;
+  47   2          case 38400: TL1=TH1=0xB0;
+  48   2                      CKCON |= 0x01;  // Timer 1 source = SYSCLK/4
+  49   2                      break;
+  50   2          case 115200:TL1=TH1=0x96;
+  51   2                      CKCON |= 0x10;  // Timer 1 source = SYSCLK
+  52   2                      break;
+  53   2      
+  54   2      #elif (OSC==IOSC_MIN)
+C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 2   
+
+                  case 9600:  TL1=TH1=0x60;
+                              CKCON |= 0x10;  // Timer 1 source = SYSCLK
+                              break;
+                  case 19200: TL1=TH1=0xB0;
+                              CKCON |= 0x10;  // Timer 1 source = SYSCLK
+                              break;
+                  case 38400: TL1=TH1=0xD8;
+                              CKCON |= 0x10;  // Timer 1 source = SYSCLK
+                              break;
+                  case 115200:TL1=TH1=0xF3; 
+                              CKCON |= 0x10;  // Timer 1 source = SYSCLK
+                              break;
+              
+              #endif
+  69   2      
+  70   2          default:  return 0;     // wrong baudrate
+  71   2        }
+  72   1        
+  73   1        TMOD &= 0x0F;
+  74   1        TMOD |= 0x20; // 0010 0000 mod 2 auto-reload
+  75   1        TR1 = 1;      // porneste T1  
+  76   1        SFRPAGE = SFRPAGE_save;
+  77   1        return 1;
+  78   1      } 
+  79            
+  80          //******************************************************************************************
+  81          void UART1_Putch(unsigned char ch){   // transmisie caracter
+  82   1       unsigned char SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  83   1        SFRPAGE = UART1_PAGE; 
+  84   1      
+  85   1        while(!TI1);
+  86   1        TI1 = 0;
+  87   1        SBUF1 = ch;
+  88   1      
+  89   1        SFRPAGE = SFRPAGE_save;
+  90   1      }
+  91          
+  92          //******************************************************************************************
+  93          void UART1_PutchPE(unsigned char ch){   // transmisie caracter
+  94   1       unsigned char SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  95   1        SFRPAGE = UART1_PAGE; 
+  96   1      
+  97   1        while(!TI1);
+  98   1        TI1 = 0;
+  99   1        ACC = ch;
+ 100   1        TB81 = P;
+ 101   1        SBUF1 = ch;
+ 102   1      
+ 103   1        SFRPAGE = SFRPAGE_save;
+ 104   1      }
+ 105          
+ 106          
+ 107          //******************************************************************************************
+ 108          void UART1_Putstr(unsigned char *ptr){    // transmisie sir de caractere
+ 109   1        while(*ptr) UART1_Putch(*ptr++);
+ 110   1      }
+ 111          
+ 112          //******************************************************************************************
+ 113          void UART1_Flush(void){             // goleste bufferul de receptie UART1
+ 114   1       unsigned char SFRPAGE_save = SFRPAGE;  // Save the current SFRPAGE
+ 115   1        SFRPAGE = UART1_PAGE; 
+ 116   1        
+C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 3   
+
+ 117   1        do RI1 = 0;
+ 118   1        while(RI1);
+ 119   1        
+ 120   1        SFRPAGE = SFRPAGE_save;
+ 121   1      }
+ 122          
+ 123          //******************************************************************************************
+ 124          void UART1_PutstrPE(unsigned char *ptr){    // transmisie sir de caractere
+ 125   1        while(*ptr) UART1_PutchPE(*ptr++);
+ 126   1      }
+ 127          
+ 128          //******************************************************************************************
+ 129          unsigned char UART1_Getch(unsigned char echo){  // receptie caracter (cu sau fara retransmisie in ecou)
+ 130   1        unsigned char ch, SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+ 131   1        
+ 132   1        SFRPAGE = UART1_PAGE; 
+ 133   1      
+ 134   1        while(!RI1);
+ 135   1        RI1 = 0;
+ 136   1        ch = SBUF1;
+ 137   1        
+ 138   1        if(echo){
+ 139   2          while (!TI1);
+ 140   2          TI1=0;
+ 141   2          SBUF1 = ch;
+ 142   2        }
+ 143   1        SFRPAGE = SFRPAGE_save;
+ 144   1        return ch;
+ 145   1      }
+ 146          
+ 147          //******************************************************************************************
+ 148          extern int timeval;
+ 149          unsigned char timeout;
+ 150          
+ 151          unsigned char UART1_Getch_TMO(int ms){    // receptie caracter cu timeout
+ 152   1        unsigned char ch, SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+ 153   1        TR0 = 1;                      // porneste timerul
+ 154   1          
+ 155   1        SFRPAGE = UART1_PAGE;
+ 156   1      
+ 157   1        timeout = 0;                  // pune initial timeout = 0
+ 158   1        timeval = ms;                 // initializeaza timeval
+ 159   1        while(timeval){
+ 160   2          if(RI1){                    // asteapta pana cand timeval = 0 sa vina un caracter
+ 161   3            timeval = 0;              // atunci cand vine, pune timeval=0
+ 162   3            
+ 163   3            ch = SBUF1;
+ 164   3            RI1 = 0;
+ 165   3            SFRPAGE = SFRPAGE_save; 
+ 166   3      
+ 167   3            return ch;        // returneaza caracterul sosit
+ 168   3          }
+ 169   2        }
+ 170   1        timeout = 1;                  // daca nu a venit caracterul, pune timeout = 1
+ 171   1      
+ 172   1        SFRPAGE = SFRPAGE_save; 
+ 173   1      
+ 174   1        return 0;
+ 175   1      } 
+ 176          
+ 177          //******************************************************************************************
+ 178          void UART1_MultiprocMode(unsigned char mod){  // configureaza modul multiprocesor adresa/data
+C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 4   
+
+ 179   1        unsigned SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+ 180   1        
+ 181   1        SFRPAGE = UART1_PAGE;
+ 182   1        
+ 183   1        if(mod == MULTIPROC_ADRESA){
+ 184   2          TB81 = 1;     // transmite caractere cu al 9-lea bit 1
+ 185   2          MCE1 = 1;   // primeste doar caractere cu al 9-lea bit 1
+ 186   2        }
+ 187   1        if(mod == MULTIPROC_DATA){
+ 188   2          TB81 = 0;     // transmite caractere cu al 9-lea bit 0
+ 189   2          MCE1 = 0;     // primeste si caractere cu al 9-lea bit 0
+ 190   2        }
+ 191   1        SFRPAGE = SFRPAGE_save; 
+ 192   1      }
+ 193          
+ 194          //******************************************************************************************
+ 195          void UART1_TxRxEN(unsigned char TxEN, unsigned char RxEN){  // valideaza/inhiba transmitatorul si receptoru
+             -l UART1
+ 196   1       unsigned char SFRPAGE_save = SFRPAGE;  // Save the current SFRPAGE
+ 197   1        SFRPAGE = UART1_PAGE; 
+ 198   1        
+ 199   1        if(TxEN) TI1 = 1;
+ 200   1        else TI1 = 0;
+ 201   1        if(RxEN) REN1 = 1;
+ 202   1        else REN1 =0;
+ 203   1        
+ 204   1        SFRPAGE = SFRPAGE_save;
+ 205   1      }
+ 206          
+ 207          
+ 208          //******************************************************************************************
+ 209          void UART1_RS485_XCVR(unsigned char TxEN, unsigned char RxEN){  // Temele 3 si 4: validare emitator si rece
+             -ptor linie RS485
+ 210   1      // valideaza sau dezactiveaza receptorul de linie RS485
+ 211   1        
+ 212   1        if(TxEN) P12 = 1;
+ 213   1        else P12 = 0;
+ 214   1        if(RxEN) P13 = 0;
+ 215   1        else P13 = 1;
+ 216   1      }
+ 217          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    457    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1      11
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

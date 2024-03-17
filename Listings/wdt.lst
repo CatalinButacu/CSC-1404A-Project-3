@@ -1,0 +1,78 @@
+C51 COMPILER V9.59.0.0   WDT                                                               02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE WDT
+OBJECT MODULE PLACED IN .\Objects\wdt.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\wdt.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\In
+                    -clude) DEBUG OBJECTEXTEND PRINT(.\Listings\wdt.lst) TABS(2) OBJECT(.\Objects\wdt.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // Declaratii SFR
+   2          #include <wdt.h>
+   3          
+   4          void WDT_Disable(void){   // dezactiveaza ceasul de garda
+   5   1         unsigned char SFRPAGE_save = SFRPAGE; // Salveaza SFRPAGE
+   6   1      
+   7   1         SFRPAGE = CONFIG_PAGE;           // Selecteaza CONFIG_PAGE
+   8   1      
+   9   1        if(EA == 1){
+  10   2          EA = 0;
+  11   2           WDTCN = 0xDE;
+  12   2           WDTCN = 0xAD;
+  13   2          EA = 1;
+  14   2        }
+  15   1        else{
+  16   2           WDTCN = 0xDE;
+  17   2           WDTCN = 0xAD;
+  18   2        }
+  19   1        SFRPAGE = SFRPAGE_save;             // Reface SFRPAGE
+  20   1      }
+  21          
+  22          void WDT_Restart(void){   // rearmeaza ceasul de garda
+  23   1         unsigned char SFRPAGE_save = SFRPAGE;  // Salveaza SFRPAGE
+  24   1      
+  25   1         SFRPAGE = CONFIG_PAGE;               // Selecteaza CONFIG_PAGE
+  26   1      
+  27   1         WDTCN = 0xA5; 
+  28   1      
+  29   1        SFRPAGE = SFRPAGE_save;                 // Reface SFRPAGE 
+  30   1      }
+  31          
+  32          void WDT_Lock(void){    // blocheaza accesul la ceasul de garda
+  33   1         unsigned char SFRPAGE_save = SFRPAGE;  // Salveaza SFRPAGE
+  34   1      
+  35   1         SFRPAGE = CONFIG_PAGE;               // Selecteaza CONFIG_PAGE
+  36   1      
+  37   1         WDTCN = 0xFF;  
+  38   1      
+  39   1        SFRPAGE = SFRPAGE_save;                 // Reface SFRPAGE 
+  40   1      }
+  41          
+  42          int WDT_Status(void){   // citeste starea ceasului de garda: 0x40-ON; 0-OFF; 
+  43   1         unsigned char ch, SFRPAGE_save = SFRPAGE; // Salveaza SFRPAGE
+  44   1      
+  45   1         SFRPAGE = CONFIG_PAGE;                 // Selecteaza CONFIG_PAGE
+  46   1      
+  47   1         ch=WDTCN & 0x10; 
+  48   1      
+  49   1        SFRPAGE = SFRPAGE_save;                   // Reface SFRPAGE 
+  50   1      
+  51   1        return ch;  
+  52   1      }
+
+
+C51 COMPILER V9.59.0.0   WDT                                                               02/28/2024 20:32:39 PAGE 2   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     66    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

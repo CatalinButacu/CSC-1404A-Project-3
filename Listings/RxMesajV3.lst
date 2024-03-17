@@ -1,0 +1,185 @@
+C51 COMPILER V9.59.0.0   RXMESAJV3                                                         02/28/2024 20:31:26 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RXMESAJV3
+OBJECT MODULE PLACED IN .\Objects\RxMesajV3.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE RxMesajV3.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\Include) DEB
+                    -UG OBJECTEXTEND PRINT(.\Listings\RxMesajV3.lst) TABS(2) OBJECT(.\Objects\RxMesajV3.obj)
+
+line level    source
+
+   1          #include <c8051F040.h>  // declaratii SFR
+   2          #include <uart1.h>
+   3          #include <Protocol.h>
+   4          #include <UserIO.h>
+   5          
+   6          extern nod retea[];           // reteaua Master-Slave, cu 5 noduri
+   7          
+   8          extern unsigned char TIP_NOD;     // tip nod
+   9          extern unsigned char ADR_MASTER;  // adresa nodului master
+  10          
+  11          extern unsigned char timeout;   // variabila globala care indica expirare timp de asteptare eveniment
+  12          //********************************************************************************************************
+             -***
+  13          unsigned char RxMesaj(unsigned char i);       // primire mesaj de la nodul i
+  14          unsigned char ascii2bin(unsigned char *ptr);          // functie de conversie 2 caractere ASCII HEX in binar
+  15          
+  16          //********************************************************************************************************
+             -***
+  17          unsigned char RxMesaj(unsigned char i){         // receptie mesaj                                
+  18   1        unsigned char j, sc, ch, adresa_hw_src, screc, src, dest, lng, tipmes, *ptr;
+  19   1      
+  20   1                                              // dezactivare Tx, validare RX UART1
+  21   1                                              // dezactivare Tx, validare RX RS485
+  22   1                                              // receptie doar octeti de adresa (mod MULTIPROC_ADRESA)
+  23   1      
+  24   1                                              // Daca nodul este master sau detine jetonul ...
+  25   1                                                // M: asteapta cu timeout primul caracter al raspunsului de la slave
+  26   1                                                // M: timeout, terminare receptie
+  27   1          
+  28   1                                                // M: raspunsul de la slave vine, considera ca mesajul anterior a fost transmis cu su
+             -cces  
+  29   1      
+  30   1                                                // M: adresa HW ASCII gresita, terminare receptie
+  31   1                                            
+  32   1                                            
+  33   1                                                // Daca nodul este slave...
+  34   1                                                  // S: asteapta cu timeout primirea primului caracter al unui mesaj
+  35   1                                                  // S: timeout, terminare receptie
+  36   1                                            
+  37   1                                                // S: iese doar cand mesajul era adresat acestui nod
+  38   1                                            
+  39   1        
+  40   1                                              // receptie octeti de date
+  41   1        
+  42   1                                              
+  43   1                                              
+  44   1                                              
+  45   1                                              // M+S: pune in bufasc restul mesajului ASCII HEX
+  46   1                                              // M+S: timeout, terminare receptie
+  47   1                                              
+  48   1                                              
+  49   1        
+  50   1                                              // M+S: reinitializare pointer in bufferul ASCII
+  51   1                                              // M+S: initializeaza screc cu adresa HW dest
+C51 COMPILER V9.59.0.0   RXMESAJV3                                                         02/28/2024 20:31:26 PAGE 2   
+
+  52   1         
+  53   1                                              // M+S: determina adresa HW src
+  54   1                                              
+  55   1                                              // M+S: aduna adresa HW src
+  56   1      
+  57   1                                              // Slave actualizeaza adresa Master
+  58   1        
+  59   1                                              // M+S: determina tipul mesajului
+  60   1                                              
+  61   1                                              // M+S: tip mesaj eronat, terminare receptie
+  62   1                                                // M+S: ia in calcul in screc tipul mesajului
+  63   1      
+  64   1                                              // M+S: Daca mesajul este unul de date (USERMES)
+  65   1                                                // M+S: determina sursa mesajului
+  66   1                                                
+  67   1                                                // M+S: ia in calcul in screc adresa src
+  68   1          
+  69   1                                                // M+S: determina destinatia mesajului
+  70   1                                                
+  71   1                                                // M+S: ia in calcul in screc adresa dest
+  72   1          
+  73   1                                                // Daca nodul este master...
+  74   1                                                  // M: bufferul destinatie este deja plin, terminare receptie
+  75   1      
+  76   1                                                // M+S: determina lng
+  77   1                                                
+  78   1                                                // M+S: ia in calcul in screc lungimea datelor
+  79   1          
+  80   1                                                // Daca nodul este master...
+  81   1                                                  // M: stocheaza in bufbin adresa HW src 
+  82   1                                                  // M: stocheaza in bufbin tipul mesajului 
+  83   1                                                  // M: stocheaza in bufbin adresa nodului sursa al mesajului 
+  84   1                                                  // M: stocheaza in bufbin adresa nodului destinatie al mesajului  
+  85   1                                                  // M: stocheaza lng
+  86   1            
+  87   1                                                  
+  88   1                                                    // M: determina un octet de date
+  89   1                                                    
+  90   1                                                    // M: ia in calcul in screc octetul de date
+  91   1                                                    
+  92   1                                                  
+  93   1                                                  // M: determina suma de control
+  94   1                                                  
+  95   1                                                  // M: pune sc in bufbin
+  96   1            
+  97   1                                                    // M: mesaj corect, marcare buffer plin
+  98   1                                                  
+  99   1                                                  
+ 100   1                                                  // M: eroare SC, terminare receptie
+ 101   1                                              
+ 102   1                                                // Daca nodul este slave ...
+ 103   1                                                  // S: stocheaza la destsrc codul nodului sursa al mesajului 
+ 104   1                                                  // S: stocheaza lng
+ 105   1                                                  
+ 106   1                                                    // S: determina un octet de date
+ 107   1                                                    
+ 108   1                                                    // S: ia in calcul in screc octetul de date
+ 109   1                                                    
+ 110   1                                                
+ 111   1                                                  // S: determina suma de control
+ 112   1                                                  
+ 113   1                                                  
+C51 COMPILER V9.59.0.0   RXMESAJV3                                                         02/28/2024 20:31:26 PAGE 3   
+
+ 114   1                                                    // S: mesaj corect, marcare buffer plin
+ 115   1                                                    
+ 116   1                                                  
+ 117   1                                                  // S: eroare SC, terminare receptie
+ 118   1                                            
+ 119   1                                              
+ 120   1                                                // mesajul este POLL_MES sau JETMES...
+ 121   1                                                  // memoreaza de la cine a primit jetonul
+ 122   1                                                  // M+S: determina suma de control
+ 123   1                                                  
+ 124   1                                                  // M+S: eroare SC, terminare receptie
+ 125   1                                            
+ 126   1      }
+*** WARNING C173 IN LINE 126 OF RxMesajV3.c: missing return-expression
+*** WARNING C280 IN LINE 17 OF RxMesajV3.c: 'i': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'j': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'sc': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'ch': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'adresa_hw_src': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'screc': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'src': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'dest': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'lng': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'tipmes': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV3.c: 'ptr': unreferenced local variable
+ 127          
+ 128          
+ 129          //********************************************************************************************************
+             -***
+ 130          unsigned char ascii2bin(unsigned char *ptr){      // converteste doua caractere ASCII HEX de la adresa ptr
+ 131   1        unsigned char bin;
+ 132   1        
+ 133   1        if(*ptr > '9') bin = (*ptr++ - 'A' + 10) << 4;  // contributia primului caracter daca este litera
+ 134   1        else bin = (*ptr++ - '0') << 4;                 // contributia primului caracter daca este cifra
+ 135   1        if(*ptr > '9') bin  += (*ptr++ - 'A' + 10);     // contributia celui de-al doilea caracter daca este litera
+ 136   1        else bin += (*ptr++ - '0');                     // contributia celui de-al doilea caracter daca este cifra
+ 137   1        return bin;
+ 138   1      }
+ 139          
+ 140          
+*** WARNING C290 IN LINE 126 OF RxMesajV3.c: missing return value
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    125    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      16
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  13 WARNING(S),  0 ERROR(S)

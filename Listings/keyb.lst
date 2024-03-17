@@ -1,0 +1,112 @@
+C51 COMPILER V9.59.0.0   KEYB                                                              02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEYB
+OBJECT MODULE PLACED IN .\Objects\keyb.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\keyb.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\I
+                    -nclude) DEBUG OBJECTEXTEND PRINT(.\Listings\keyb.lst) TABS(2) OBJECT(.\Objects\keyb.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // SFR declarations
+   2          #include <keyb.h>
+   3          #include <timer.h>
+   4          #include <osc.h>
+   5          
+   6          unsigned char key, last_key, keypress_detected, key_released; // variabile globale
+   7          
+   8          #define T3INT_10MS 10 * SYSCLK/12/1000
+   9          
+  10          void KEYB_Init(void){
+  11   1          unsigned char SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
+  12   1      
+  13   1        SFRPAGE = CONFIG_PAGE;
+  14   1      
+  15   1        key = keypress_detected = 0;
+  16   1        key_released = 1;
+  17   1        
+  18   1        P4 &= 0x0F;     // Pune 0 pe coloane (P4.7 - P4.4)
+  19   1        P4 |= 0x80;     // comandã pe 1 prima coloanã (P4.7)
+  20   1      
+  21   1        Timer3_Init(T3INT_10MS);  // initializeaza Timer 3
+  22   1        
+  23   1        SFRPAGE = SFRPAGE_save; 
+  24   1      }
+  25          
+  26          char KEYB_Input(void){
+  27   1        unsigned char val;
+  28   1        EA  =   0;      // dezactivare intreruperi
+  29   1        val = key;
+  30   1        if (key) last_key = key;
+  31   1        key = 0;
+  32   1        EA  = 1;      // reactivare intreruperi
+  33   1        return val;
+  34   1      }
+  35          
+  36          void Timer3_ISR (void) interrupt 14    // handler intrerupere Timer3 
+  37          {
+  38   1      unsigned char val;
+  39   1      
+  40   1        if(TF3){               // intrerupere la depasire Timer 3?
+  41   2          TF3 = 0;              // Daca da, sterge flagul de intrerupere la depasire
+  42   2          SFRPAGE = CONFIG_PAGE;    // permite accesul la P4
+  43   2          val = P4;            // citeste P4
+  44   2          if(!keypress_detected){   // daca nu era detectata anterior nicio apasare
+  45   3            if(val & 0x0F){         // daca s-a apasat intre timp o tasta
+  46   4              keypress_detected = val;      // memoreaza codul tastei apaste
+  47   4              return;                 // revine fara sa se treaca la urmatoarea coloana
+  48   4            }
+  49   3          }
+  50   2          else {              // daca exista o apasare detectat anterior
+  51   3            if(val == keypress_detected) {  // daca aceeasi tasta a ramas apasata
+  52   4              if(key_released){           // daca inainte de detectare nu era nicio tasta apasata     
+  53   5                key_released = 0;           // acum este apasata o tasta
+  54   5                switch(val){              // decodifica tasta apasata si pune codul ASCII in key
+C51 COMPILER V9.59.0.0   KEYB                                                              02/28/2024 20:32:39 PAGE 2   
+
+  55   6                  case 0x88: key = 'D'; break;    // codul tastei apasate ferm corespunde tastei "D"
+  56   6                  case 0x84: key = 'C'; break;    // ...................
+  57   6                  case 0x82: key = 'B'; break;
+  58   6                  case 0x81: key = 'A'; break;
+  59   6                  case 0x48: key = '#'; break;
+  60   6                  case 0x44: key = '9'; break;
+  61   6                  case 0x42: key = '6'; break;
+  62   6                  case 0x41: key = '3'; break;
+  63   6                  case 0x28: key = '0'; break;
+  64   6                  case 0x24: key = '8'; break;
+  65   6                  case 0x22: key = '5'; break;
+  66   6                  case 0x21: key = '2'; break;
+  67   6                  case 0x18: key = '*'; break;
+  68   6                  case 0x14: key = '7'; break;
+  69   6                  case 0x12: key = '4'; break;
+  70   6                  case 0x11: key = '1'; break;
+  71   6                }
+  72   5              }
+  73   4            }
+  74   3            else {                  // daca codul tastei apasate acum e diferit de cel memorat
+  75   4              keypress_detected = 0;        // nu mai este detectata nicio apasare
+  76   4              key_released = 1;           // nu mai este apasata nicio tasta
+  77   4            }
+  78   3          }
+  79   2          if(key_released){                     // daca nu mai este apasata nicio tasta
+  80   3            P4 &= 0x0F;                           // dezactiveaza si coloana curenta 
+  81   3            if ((val & 0xF0) != 0x10) P4 |= val >> 1;   // daca nu a fost ultima coloana, trece la urmatoarea 
+  82   3            else P4 |= 0x80;                      // altfel, reia de la prima coloana
+  83   3          }
+  84   2        }
+  85   1      }
+  86          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    385    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4       2
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

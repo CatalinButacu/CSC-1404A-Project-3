@@ -1,0 +1,133 @@
+C51 COMPILER V9.59.0.0   TXMESAJV3                                                         02/28/2024 20:31:26 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TXMESAJV3
+OBJECT MODULE PLACED IN .\Objects\TxMesajV3.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE TxMesajV3.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\Include) DEB
+                    -UG OBJECTEXTEND PRINT(.\Listings\TxMesajV3.lst) TABS(2) OBJECT(.\Objects\TxMesajV3.obj)
+
+line level    source
+
+   1          #include <c8051F040.h>  // declaratii SFR
+   2          #include <uart1.h>
+   3          #include <Protocol.h>
+   4          #include <UserIO.h>
+   5          
+   6          extern unsigned char TIP_NOD;     // tip nod initial: Nu Master, Nu Jeton
+   7          
+   8          extern nod retea[];
+   9          
+  10          extern unsigned char timeout;   // variabila globala care indica expirare timp de asteptare eveniment
+  11          //********************************************************************************************************
+             -***
+  12          void TxMesaj(unsigned char i);  // transmisie mesaj destinat nodului i
+  13          void bin2ascii(unsigned char ch, unsigned char *ptr); // functie de conversie octet din binar in ASCII HEX
+  14          
+  15          //********************************************************************************************************
+             -***
+  16          void TxMesaj(unsigned char i){          // transmite mesajul din buffer-ul i
+  17   1        unsigned char sc, *ptr, ch, j;
+  18   1      
+  19   1                                              // daca este un mesaj POLL_MES sau JET_MES (au aceeasi valoare)
+  20   1                                                // calculeaza direct sc
+  21   1                                              
+  22   1                                                                                // altfel...
+  23   1                                                // initializeaza SC cu adresa HW a nodului destinatie
+  24   1                                                // ia in calcul adresa_hw_src
+  25   1                                                // ia in calcul tipul mesajului
+  26   1                                                // ia in calcul adresa nodului sursa al mesajului
+  27   1                                                // ia in calcul adresa nodului destinatie al mesajului
+  28   1                                                // ia in calcul lungimea datelor
+  29   1                                                
+  30   1                                                  // ia in calcul datele
+  31   1                                                // stocheaza suma de control
+  32   1                                              
+  33   1                                              // initializare pointer pe bufferul ASCII
+  34   1                                              // pune in bufasc adresa HW dest + '0'
+  35   1                                              // pune in bufasc adresa HW src in ASCII HEX
+  36   1                                              
+  37   1                                              // pune in bufasc tipul mesajului
+  38   1                                              
+  39   1                                              // daca este un mesaj de date (USER_MES)
+  40   1                                                // pune in bufasc src
+  41   1                                                
+  42   1                                                // pune in bufasc dest
+  43   1                                                
+  44   1                                                // pune in bufasc lng date
+  45   1                                                
+  46   1                                                
+  47   1                                                  // pune in bufasc datele
+  48   1                                                
+  49   1                                              
+  50   1                                            
+  51   1                                              // pune in bufasc SC
+  52   1                                              
+C51 COMPILER V9.59.0.0   TXMESAJV3                                                         02/28/2024 20:31:26 PAGE 2   
+
+  53   1                                              // pune in bufasc CR
+  54   1                                              // pune in bufasc LF
+  55   1        
+  56   1                                              // urmeaza transmisia octetului de adresa (mod MULTIPROC_ADRESA)
+  57   1                                              // valideaza Tx si Rx UART1
+  58   1                                              // validare Tx si Rx RS485
+  59   1                                              
+  60   1                                              // reinitializare pointer
+  61   1                                              // transmite adresa HW dest
+  62   1        
+  63   1                                              // daca caracterul primit e diferit de cel transmis ...
+  64   1                                                  // dezactivare Tx si Rx UART1
+  65   1                                                  // dezactivare Tx si Rx RS485
+  66   1                                                  // afiseaza Eroare coliziune
+  67   1                                                  // asteapta WAIT msec
+  68   1                                                  // termina transmisia (revine)
+  69   1                                              
+  70   1      
+  71   1                                                // urmeaza transmisia octetilor de date (mod MULTIPROC_DATA)
+  72   1                                                // dezactivare Rx UART1
+  73   1                                                
+  74   1                                                // transmite restul caracterelor din bufferul ASCII, mai putin ultimul
+  75   1                                                
+  76   1                                                // transmite si ultimul caracter
+  77   1                                                // activare Rx UART1
+  78   1        
+  79   1                                                //nodul master nu goleste bufferul
+  80   1                                                
+  81   1                                                // asteapta terminarea transmisiei/receptiei ultimului caracter
+  82   1                                                
+  83   1                                                // dezactivare Tx si Rx UART1
+  84   1                                                // dezactivare Tx si Rx RS485
+  85   1      }
+*** WARNING C280 IN LINE 16 OF TxMesajV3.c: 'i': unreferenced local variable
+*** WARNING C280 IN LINE 17 OF TxMesajV3.c: 'sc': unreferenced local variable
+*** WARNING C280 IN LINE 17 OF TxMesajV3.c: 'ptr': unreferenced local variable
+*** WARNING C280 IN LINE 17 OF TxMesajV3.c: 'ch': unreferenced local variable
+*** WARNING C280 IN LINE 17 OF TxMesajV3.c: 'j': unreferenced local variable
+  86          
+  87          //********************************************************************************************************
+             -***
+  88          void bin2ascii(unsigned char ch, unsigned char *ptr){ // converteste octetul ch in doua caractere ASCII HE
+             -X puse la adresa ptr
+  89   1        unsigned char first, second;
+  90   1        first = (ch & 0xF0)>>4;           // extrage din ch primul digit
+  91   1        second = ch & 0x0F;               // extrage din ch al doilea digit
+  92   1        if(first > 9) *ptr++ = first - 10 + 'A';  // converteste primul digit daca este litera
+  93   1        else *ptr++ = first + '0';        // converteste primul digit daca este cifra
+  94   1        if(second > 9) *ptr++ = second - 10 + 'A';  // converteste al doilea digit daca este litera
+  95   1        else *ptr++ = second + '0';       // converteste al doilea digit daca este cifra
+  96   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    105    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      10
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V9.59.0.0   TXMESAJV3                                                         02/28/2024 20:31:26 PAGE 3   
+
+
+C51 COMPILATION COMPLETE.  5 WARNING(S),  0 ERROR(S)

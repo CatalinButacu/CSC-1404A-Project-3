@@ -1,0 +1,17 @@
+".\Objects\timer.obj",
+".\Objects\uart1.obj",
+".\Objects\lcd.obj",
+".\Objects\keyb.obj",
+".\Objects\osc.obj",
+".\Objects\port.obj",
+".\Objects\uart0.obj",
+".\Objects\wdt.obj",
+".\Objects\MS-JT.obj",
+".\Objects\TxMesajV4.obj",
+".\Objects\RxMesajV4.obj",
+".\Objects\UserIO.obj" 
+TO ".\Objects\MSv4" 
+PRINT(".\Listings\MSv4.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 
+CODE( 0X0000-0XFFFF )
+XDATA( 0X0000-0X0FFF )

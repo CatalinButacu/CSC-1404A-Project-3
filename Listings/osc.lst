@@ -1,0 +1,50 @@
+C51 COMPILER V9.59.0.0   OSC                                                               02/28/2024 20:32:38 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE OSC
+OBJECT MODULE PLACED IN .\Objects\osc.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\osc.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\In
+                    -clude) DEBUG OBJECTEXTEND PRINT(.\Listings\osc.lst) TABS(2) OBJECT(.\Objects\osc.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // declaratii SFR
+   2          #include <osc.h>
+   3          
+   4          //-----------------------------------------------------------------------------
+   5          void SYSCLK_Init (void){
+   6   1        unsigned char SFRPAGE_save = SFRPAGE;   // salveaza SFRPAGE
+   7   1        int i;
+   8   1        SFRPAGE = CONFIG_PAGE;              // comuta SFRPAGE
+   9   1        switch(OSC){
+  10   2          case IOSC_MAX:  OSCICN = 0x83;                // IOSC_CLK = IOSC_CLK_MAX 24.5 MHz)
+  11   2                    CLKSEL = 0x00;             // selecteazã oscilatorul intern ca SYSCLK
+  12   2                    break;
+  13   2      
+  14   2          case XOSC:    OSCXCN = 0x60;          // cristal de cuartz, fara divizare cu 2
+  15   2                    OSCXCN |= 7;            // 10 MHz < f_crystal <= 30 MHz
+  16   2                    for (i = 3000; i > 0; i--);         // asteapta 1 ms: la 24.5 MHz, 1 ms = 24500 SYSCLKs
+  17   2                    while ((OSCXCN & 0x80) != 0x80);    // asteapta stabilizarea oscilatiilor: XTLVLD => ‘1’.
+  18   2                    CLKSEL = 0x01;                  // selecteazã oscilatorul extern ca SYSCLK
+  19   2                    break;
+  20   2          
+  21   2          case IOSC_MIN:  OSCICN = 0x80;                // IOSC_CLK = IOSC_CLK_MAX 24.5 MHz)
+  22   2                    CLKSEL = 0x00;             // selecteazã oscilatorul intern ca SYSCLK
+  23   2        }
+  24   1         RSTSRC = 0x04;                // valideaza Missing Clock Detector
+  25   1        SFRPAGE = SFRPAGE_save;             // reface SFRPAGE            
+  26   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     67    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

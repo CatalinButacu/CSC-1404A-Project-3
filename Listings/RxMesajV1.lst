@@ -1,0 +1,211 @@
+C51 COMPILER V9.59.0.0   RXMESAJV1                                                         02/28/2024 20:26:52 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RXMESAJV1
+OBJECT MODULE PLACED IN .\Objects\RxMesajV1.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE RxMesajV1.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\Include) DEB
+                    -UG OBJECTEXTEND PRINT(.\Listings\RxMesajV1.lst) TABS(2) OBJECT(.\Objects\RxMesajV1.obj)
+
+line level    source
+
+   1          #include <c8051F040.h>  // declaratii SFR
+   2          #include <uart1.h>
+   3          #include <Protocol.h>
+   4          #include <UserIO.h>
+   5          
+   6          extern nod retea[];           // reteaua Master-Slave, cu 5 noduri
+   7          
+   8          extern unsigned char TIP_NOD;     // tip nod
+   9          extern unsigned char ADR_MASTER;  // adresa nodului master
+  10          
+  11          extern unsigned char timeout;   // variabila globala care indica expirare timp de asteptare eveniment
+  12          //********************************************************************************************************
+             -***
+  13          unsigned char RxMesaj(unsigned char i);       // primire mesaj de la nodul i
+  14          unsigned char ascii2bin(unsigned char *ptr);      // functie de conversie 2 caractere ASCII HEX in binar
+  15          
+  16          //********************************************************************************************************
+             -***
+  17          unsigned char RxMesaj(unsigned char i){         // receptie mesaj                                
+  18   1        unsigned char j, ch, sc, adresa_hw_dest, adresa_hw_src, screc, src, dest, lng, tipmes, *ptr;
+  19   1                                    // Daca nodul este master (asteapta raspuns de la slave)
+  20   1                                    // sau a transmis jetonul si asteapta confirmarea preluarii acestuia - un mesaj JET_MES
+  21   1                                      // M: asteapta cu timeout primul caracter al raspunsului de la slave
+  22   1                                      // M: timeout, terminare receptie
+  23   1                                      // M: raspunsul de la slave vine, considera ca mesajul anterior a fost transmis cu succes 
+  24   1      
+  25   1                                      // M: daca primul caracter nu este ':'...
+  26   1                                        // M: ignora restul mesajului
+  27   1                                          
+  28   1                                        // M: eroare de incadrare, terminare receptie
+  29   1                                                                    
+  30   1                                      // M: initializare pointer in bufferul ASCII
+  31   1                                      
+  32   1                                      // M: asteapta cu timeout primul caracter ASCII al adresei HW
+  33   1                                      // M: timeout, terminare receptie
+  34   1      
+  35   1                                      // M: asteapta cu timeout al doilea caracter al adresei HW
+  36   1                                      // M: timeout, terminare receptie
+  37   1      
+  38   1                                      
+  39   1                                      // M: daca mesajul nu este pentru acest nod 
+  40   1                                        // M: ignora restul mesajului
+  41   1                                      
+  42   1                                        // M: adresa HW ASCII gresita, terminare receptie
+  43   1                                    
+  44   1                                    
+  45   1                                    
+  46   1                                    // Daca nodul este slave sau daca nu are jetonul ...
+  47   1                                    
+  48   1                                      // S: asteapta cu timeout primirea primului caracter al unui mesaj (de la master sau de la
+             - cel care are jetonul)
+  49   1                                      // (sau de la nodul care detine jetonul)
+  50   1                                      // S: timeout, terminare receptie, nodul va deveni master
+  51   1                                      // sau va anunta ca s-a pierdut jetonul si va regenera jetonul
+C51 COMPILER V9.59.0.0   RXMESAJV1                                                         02/28/2024 20:26:52 PAGE 2   
+
+  52   1                                      
+  53   1                                    // S: asteapta sincronizarea cu inceputul mesajului
+  54   1            
+  55   1                                    // S: initializeaza pointerul in bufferul ASCII
+  56   1                                    // S: asteapta cu timeout primul caracter ASCII al adresei HW
+  57   1                                    // S: timeout, terminare receptie
+  58   1      
+  59   1                                    // S: asteapta cu timeout al doilea caracter al adresei HW
+  60   1                                    // S: timeout, terminare receptie
+  61   1      
+  62   1                                    // S: determina adresa HW destinatie
+  63   1                                    
+  64   1                                    // S: iese doar cand mesajul era adresat acestui nod
+  65   1                                    
+  66   1                                    
+  67   1                                    
+  68   1                                    // M+S: pune in bufasc restul mesajului ASCII HEX
+  69   1                                    // M+S: timeout, terminare receptie
+  70   1                                    
+  71   1                                    
+  72   1        
+  73   1                                    // M+S: reinitializare pointer in bufferul ASCII
+  74   1                                    // M+S: initializeaza screc cu adresa HW dest
+  75   1         
+  76   1                                    // M+S: determina adresa HW src
+  77   1                                    
+  78   1                                    // M+S: aduna adresa HW src
+  79   1      
+  80   1                                    // Slave actualizeaza adresa Master
+  81   1        
+  82   1                                    // M+S: determina tipul mesajului
+  83   1                                      
+  84   1                                    // M+S: cod functie eronat, terminare receptie
+  85   1                                      // M+S: ia in calcul in screc codul functiei
+  86   1      
+  87   1                                    // M+S: Daca mesajul este USER_MES
+  88   1                                    // M+S: determina sursa mesajului
+  89   1                                      
+  90   1                                    // M+S: ia in calcul in screc adresa src
+  91   1          
+  92   1                                    // M+S: determina destinatia mesajului
+  93   1                                      
+  94   1                                    // M+S: ia in calcul in screc adresa dest
+  95   1          
+  96   1                                    // Daca nodul este master...
+  97   1                                    // M: bufferul destinatie este deja plin, terminare receptie
+  98   1      
+  99   1                                    // M+S: determina lng
+ 100   1                                        
+ 101   1                                    // M+S: ia in calcul in screc lungimea datelor
+ 102   1          
+ 103   1                                    // Daca nodul este master...
+ 104   1                                      // M: stocheaza in bufbin adresa HW src egala cu ADR_NOD
+ 105   1                                      // M: stocheaza in bufbin tipul mesajului 
+ 106   1                                      // M: stocheaza in bufbin adresa nodului sursa al mesajului 
+ 107   1                                      // M: stocheaza in bufbin adresa nodului destinatie al mesajului  
+ 108   1                                      // M: stocheaza lng
+ 109   1              
+ 110   1                                            
+ 111   1                                      // M: determina un octet de date
+ 112   1                                              
+ 113   1                                      // M: ia in calcul in screc octetul de date
+C51 COMPILER V9.59.0.0   RXMESAJV1                                                         02/28/2024 20:26:52 PAGE 3   
+
+ 114   1                                              
+ 115   1                                          
+ 116   1                                      // M: determina suma de control
+ 117   1                                          
+ 118   1                                      // M: pune sc in bufbin
+ 119   1                                            
+ 120   1                                      // M: mesaj corect, marcare buffer plin
+ 121   1                                              
+ 122   1                                          
+ 123   1                                      // M: eroare SC, terminare receptie
+ 124   1                                        
+ 125   1                                    // Daca nodul este slave ...
+ 126   1                                    // S: stocheaza la destsrc codul nodului sursa al mesajului 
+ 127   1                                    // S: stocheaza lng
+ 128   1                                        
+ 129   1                                    // S: determina un octet de date
+ 130   1                                          
+ 131   1                                    // S: ia in calcul in screc octetul de date
+ 132   1                                        
+ 133   1                                    
+ 134   1                                    // S: determina suma de control
+ 135   1                                          
+ 136   1                                          
+ 137   1                                    // S: mesaj corect, marcare buffer plin
+ 138   1                                      
+ 139   1                                        
+ 140   1                                    // S: eroare SC, terminare receptie
+ 141   1                                    
+ 142   1                                      
+ 143   1                                  // daca mesajul este POLL_MES sau JET_MES
+ 144   1                                    // memoreaza adresa hw src pentru a sti de la cine a primit jetonul
+ 145   1                                    // M+S: determina suma de control
+ 146   1                                    
+ 147   1                                    // M+S: returneaza POK sau JOK, au aceeasi valoare  
+ 148   1                                    // M+S: eroare SC, terminare receptie
+ 149   1                                      
+ 150   1          return TMO;     // simuleaza asteptarea mesajului si iesirea cu timeout
+ 151   1      }                             
+*** WARNING C280 IN LINE 17 OF RxMesajV1.c: 'i': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'j': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'ch': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'sc': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'adresa_hw_dest': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'adresa_hw_src': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'screc': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'src': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'dest': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'lng': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'tipmes': unreferenced local variable
+*** WARNING C280 IN LINE 18 OF RxMesajV1.c: 'ptr': unreferenced local variable
+ 152          
+ 153          
+ 154          //********************************************************************************************************
+             -***
+ 155          unsigned char ascii2bin(unsigned char *ptr){      // converteste doua caractere ASCII HEX de la adresa ptr
+ 156   1        unsigned char bin;
+ 157   1        
+ 158   1        if(*ptr > '9') bin = (*ptr++ - 'A' + 10) << 4;  // contributia primului caracter daca este litera
+ 159   1        else bin = (*ptr++ - '0') << 4;                 // contributia primului caracter daca este cifra
+ 160   1        if(*ptr > '9') bin  += (*ptr++ - 'A' + 10);     // contributia celui de-al doilea caracter daca este litera
+ 161   1        else bin += (*ptr++ - '0');                     // contributia celui de-al doilea caracter daca este cifra
+ 162   1        return bin;
+C51 COMPILER V9.59.0.0   RXMESAJV1                                                         02/28/2024 20:26:52 PAGE 4   
+
+ 163   1      }
+ 164          
+ 165          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    127    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      17
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  12 WARNING(S),  0 ERROR(S)

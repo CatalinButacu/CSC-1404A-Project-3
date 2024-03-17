@@ -1,0 +1,51 @@
+C51 COMPILER V9.59.0.0   PORT                                                              02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE PORT
+OBJECT MODULE PLACED IN .\Objects\port.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\port.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\I
+                    -nclude) DEBUG OBJECTEXTEND PRINT(.\Listings\port.lst) TABS(2) OBJECT(.\Objects\port.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>           // declaratii SFR
+   2          #include <port.h>
+   3          
+   4          //====================================================================================
+   5          // PORT_Init - Configurare Crossbar Switch si Porturi de I/E de uz general (GPIO)
+   6          //====================================================================================
+   7          
+   8          void PORT_Init (void)
+   9          {
+  10   1         unsigned char SFRPAGE_save = SFRPAGE;  // Salveaza SFRPAGE
+  11   1      
+  12   1         SFRPAGE = CONFIG_PAGE;   // Selecteaza CONFIG_PAGE
+  13   1        
+  14   1        P0MDOUT |= 0x01;        // valideaza Tx0 ca iesire push-pull
+  15   1        P1MDOUT |= 0x0D;        // valideaza Tx1, TxEN si RxEN ca iesiri push-pull
+  16   1        P1 &= 0xFB;         // pune TxEN = 0
+  17   1      
+  18   1        P3MDOUT |= 0x3F;      // valideaza P3.5 - P3.0 ca iesiri push-pull (linii de comanda si date LCD)
+  19   1        P4MDOUT |= 0xF0;      // valideaza P4.7 - P4.4 ca iesiri push-pull  (comanda coloane Keyboard)
+  20   1      
+  21   1        XBR0 = XBR0_CONFIG;   // valideaza perifericele interne utilizate     
+  22   1        XBR1 = XBR1_CONFIG;         
+  23   1        XBR3 = XBR3_CONFIG;         
+  24   1        XBR2 = XBR2_CONFIG;   // valideaza crossbar switch si weak pull-ups interne
+  25   1      
+  26   1        SFRPAGE = SFRPAGE_save; // Reface SFRPAGE 
+  27   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     35    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

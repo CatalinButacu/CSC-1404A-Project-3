@@ -1,0 +1,161 @@
+C51 COMPILER V9.59.0.0   TIMER                                                             02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Objects\timer.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\timer.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\
+                    -Include) DEBUG OBJECTEXTEND PRINT(.\Listings\timer.lst) TABS(2) OBJECT(.\Objects\timer.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // declaratii SFR
+   2          #include <timer.h>
+   3          #include <osc.h>
+   4          
+   5          int timeval;            // contor numar de ms decrenentat in functia de intrerupere Timer 0
+   6          
+   7          //********************************************************************************************************
+             -***
+   8          void Timer0_Init(void){ // initializare timer 0
+   9   1        TMOD |= 0x01;         // Timer 0 modul 1
+  10   1        TL0 = 0xDD;
+  11   1        TH0 = 0xF7;           // Intarziere 1 ms (TH0:TL0 = 65536-2083 = 0xF7DD la 25 MHz, cu factor de divizare 12)
+  12   1        TR0 = 1;              // Pornire Timer 0
+  13   1        ET0 = 1;              // Validare intreruperi Timer 0
+  14   1        EA = 1;             // validare globala intreruperi
+  15   1      }
+  16          
+  17          //********************************************************************************************************
+             -***
+  18          void Timer0IntHandler (void) interrupt 1 {    // rutina intrerupere timer 0
+  19   1        TL0 = 0xDD;
+  20   1        TH0 = 0xF7;             // reincarca numaratorul pentru 1 ms
+  21   1        if(timeval) timeval--;      // decrementeaza timeval daca este diferit de 0
+  22   1        else TR0 = 0;           // daca timeval=0, opreste timerul 0
+  23   1      }
+  24           
+  25          //********************************************************************************************************
+             -***
+  26          void Delay(int ms){         // intarziere programabila
+  27   1        timeval = ms;             // initializeaza timeval
+  28   1        TR0 = 1;                  // porneste timerul 0
+  29   1        while(timeval);           // asteapta pana timeval=0 (decrementat in functia de intrerupere)
+  30   1      }
+  31          
+  32          unsigned char T2flag, T3flag, T4flag;
+  33          
+  34          //-----------------------------------------------------------------------------
+  35          // Timer2_Init ()
+  36          //-----------------------------------------------------------------------------
+  37          //
+  38          // Valoare returnata : niciuna
+  39          // Parametri   : nu
+  40          //
+  41          // Configurea Timer2 in modul 16-bit auto-reload si genereaza o intrerupere la depasire
+  42          // dupa o intarziere programabila.
+  43          //
+  44          //-----------------------------------------------------------------------------
+  45          
+  46          void Timer2_Init (unsigned int counts)
+  47          {
+  48   1         unsigned char SFRPAGE_save = SFRPAGE;  // Salveaza SFRPAGE
+  49   1      
+  50   1        SFRPAGE = TMR2_PAGE;              // Selecteaza TMR2_PAGE
+  51   1      
+C51 COMPILER V9.59.0.0   TIMER                                                             02/28/2024 20:32:39 PAGE 2   
+
+  52   1          TMR2CN = 0x00;                      // Stop Timer2; Sterge TF2;
+  53   1                                              // mod auto-reload
+  54   1      
+  55   1          TMR2CF = 0x00;                      // foloseste SYSCLK/12, cu incrementare
+  56   1      
+  57   1          RCAP2 = 65536-counts;               // valoarea de reincarcare
+  58   1          TMR2 = 0xffff;                      // reincarca imediat
+  59   1          
+  60   1          ET2 = 1;                            // validare intrerruperi Timer2
+  61   1      
+  62   1          TR2 = 1;                            // Start Timer2
+  63   1          
+  64   1          T2flag = 0;                 // flag folosit pentru contorizare intreruperi
+  65   1      
+  66   1        SFRPAGE = SFRPAGE_save;               // Reface SFRPAGE 
+  67   1      }
+  68          
+  69          //------------------------------------------------------------------------------------
+  70          // Timer3_Init
+  71          //------------------------------------------------------------------------------------
+  72          //
+  73          // Configurea Timer3 in modul 16-bit auto-reload si genereaza o intrerupere la depasire
+  74          // dupa o intarziere programabila.
+  75          //
+  76          //-----------------------------------------------------------------------------
+  77          
+  78          void Timer3_Init (unsigned int counts)
+  79          {
+  80   1         unsigned char SFRPAGE_save = SFRPAGE; // Salveaza SFRPAGE
+  81   1        SFRPAGE = TMR3_PAGE;            // Selecteaza TMR3_PAGE
+  82   1        
+  83   1        TMR3CN = 0x00;              // TF3 EXF3 - - EXEN3 TR3 C/T3 CP/RL3 
+  84   1                              // Stop Timer3; Sterge TF3;
+  85   1                              
+  86   1        TMR3CF = 0x00;            // - - - T3M1 T3M0 TOG3 T3OE DCEN
+  87   1                              // foloseste SYSCLK/12
+  88   1      
+  89   1         RCAP3   = 65536-counts;             // valoarea de reincarcare
+  90   1         TMR3    = 0xffff;                    // reincarca imediat
+  91   1        
+  92   1         EIE2   |= 0x01;                      // validare intreruperi Timer3
+  93   1         TR3 = 1;                             // start Timer3
+  94   1      
+  95   1        T3flag = 0;                 // flag folosit pentru contorizare intreruperi
+  96   1      
+  97   1        SFRPAGE = SFRPAGE_save;             // Reface SFRPAGE 
+  98   1      }
+  99          
+ 100          //------------------------------------------------------------------------------------
+ 101          // Timer4_Init
+ 102          //------------------------------------------------------------------------------------
+ 103          //
+ 104          // Configurea Timer4 in modul 16-bit auto-reload si genereaza o intrerupere la depasire
+ 105          // dupa o intarziere programabila.
+ 106          //
+ 107          //-----------------------------------------------------------------------------
+ 108          
+ 109          void Timer4_Init (unsigned int counts)
+ 110          {
+ 111   1         unsigned char SFRPAGE_save = SFRPAGE; // Salveaza SFRPAGE
+ 112   1        SFRPAGE = TMR4_PAGE;            // Selecteaza TMR4_PAGE
+ 113   1        
+C51 COMPILER V9.59.0.0   TIMER                                                             02/28/2024 20:32:39 PAGE 3   
+
+ 114   1        TMR4CN = 0x00;              // TF4 EXF4 - - EXEN4 TR4 C/T4 CP/RL4 
+ 115   1                              // Stop Timer4; Sterge TF4;
+ 116   1                              
+ 117   1        TMR4CF = 0x00;            // - - - T4M1 T4M0 TOG4 T4OE DCEN
+ 118   1                              // foloseste SYSCLK/12
+ 119   1      
+ 120   1         RCAP4   = 65536-counts;             // valoarea de reincarcare
+ 121   1         TMR4    = 0xffff;                    // reincarca imediat
+ 122   1        
+ 123   1         EIE2   |= 0x04;                      // validare intreruperi Timer4
+ 124   1         TR4 = 1;                             // start Timer4
+ 125   1      
+ 126   1        T4flag = 0;                 // flag folosit pentru contorizare intreruperi
+ 127   1      
+ 128   1        SFRPAGE = SFRPAGE_save;             // Reface SFRPAGE 
+ 129   1      }
+ 130          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    206    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      5    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

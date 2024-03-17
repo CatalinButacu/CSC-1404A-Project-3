@@ -1,0 +1,275 @@
+C51 COMPILER V9.59.0.0   LCD                                                               02/28/2024 20:32:39 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE LCD
+OBJECT MODULE PLACED IN .\Objects\lcd.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\lcd.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\In
+                    -clude) DEBUG OBJECTEXTEND PRINT(.\Listings\lcd.lst) TABS(2) OBJECT(.\Objects\lcd.obj)
+
+line level    source
+
+   1          #include <C8051F040.h>                 // SFR declarations
+   2          #include <lcd.h>
+   3          #include <osc.h>
+   4          
+   5          unsigned char LCD_line,LCD_col;
+   6          
+   7          // initializare LCD
+   8          void LCD_Init(void)
+   9          {
+  10   1        LCD_PORT = 0xFF;
+  11   1        Delay_ms (20);
+  12   1      
+  13   1        LCD_PORT = 0xF3<<2;
+  14   1        LCD_EN = 1;
+  15   1        LCD_EN = 0;
+  16   1        Delay_ms (10);
+  17   1      
+  18   1        LCD_PORT = 0xF3<<2;
+  19   1        LCD_EN = 1;
+  20   1        LCD_EN = 0;
+  21   1        Delay_ms (1);
+  22   1      
+  23   1        LCD_PORT = 0xF3<<2;
+  24   1        LCD_EN = 1;
+  25   1        LCD_EN = 0;
+  26   1        Delay_ms (1);
+  27   1        
+  28   1        LCD_PORT = 0xF2<<2;
+  29   1        LCD_EN = 1;
+  30   1        LCD_EN = 0;
+  31   1        Delay_ms (1);
+  32   1      
+  33   1        LCD_Cmd(0x28);       // 4-bit mode - 2 line - 5x7 font. 
+  34   1        LCD_Cmd(0x0F);       // Display on - cursor - blink.
+  35   1      //  LCD_Cmd(0x0C);       // Display on - no cursor - no blink.
+  36   1        LCD_Cmd(0x06);       // Automatic Increment - No Display shift.
+  37   1        LCD_Cmd(0x80);       // Address DDRAM with 0 offset 80h.
+  38   1        LCD_Cmd(HOME);
+  39   1        Delay_ms (1);
+  40   1        LCD_Cmd(CLEAR);
+  41   1        Delay_ms (1);
+  42   1        LCD_line = LCD_col = 0;
+  43   1       }
+  44          
+  45          // transmite o comanda catre LCD
+  46          void LCD_Cmd(unsigned char cmd){
+  47   1        LCD_PORT = 0xC0 | (cmd >> 2) & 0xFC;
+  48   1        LCD_EN = 1;
+  49   1        LCD_EN = 0;
+  50   1        Delay_ms (1);
+  51   1      
+  52   1        LCD_PORT = 0xC0 | (cmd << 2) & 0xFC;
+  53   1        LCD_EN = 1;
+  54   1        LCD_EN = 0;
+C51 COMPILER V9.59.0.0   LCD                                                               02/28/2024 20:32:39 PAGE 2   
+
+  55   1        Delay_ms (1);
+  56   1      }
+  57          
+  58          // afiseaza un caracter in pozitia curenta
+  59          void LCD_Data(unsigned char ch){
+  60   1        LCD_PORT = 0xC1 | ((ch >> 2) & 0xFC);
+  61   1        LCD_EN = 1;
+  62   1        LCD_EN = 0;
+  63   1        Delay_ms (1);
+  64   1      
+  65   1        LCD_PORT = 0xC1 | ((ch << 2) & 0xFC);
+  66   1        LCD_EN = 1;
+  67   1        LCD_EN = 0;
+  68   1        Delay_ms (1);
+  69   1      }
+  70          
+  71          // seteaza pozitie cursor
+  72          int LCD_SetPos(unsigned char line, unsigned char column){
+  73   1        if(line>1 || column>15) return 0;
+  74   1        if(line) LCD_Cmd(0xC0+column);
+  75   1        else LCD_Cmd(0x80+column);
+  76   1        LCD_line = line;
+  77   1        LCD_col = column;
+  78   1        return 1;
+  79   1      }
+  80          
+  81          // afiseaza un caracter intr-o anumita positie
+  82          int LCD_PutchPos(unsigned char line, unsigned char column, char ch){
+  83   1          if(LCD_SetPos(line, column)){
+  84   2          LCD_Putch(ch);
+  85   2          return 1;
+  86   2        }
+  87   1        else return 0;
+  88   1      }
+  89          
+  90          // afiseaza un caracter in pozitia curenta a cursorului
+  91          void LCD_Putch(char ch) {
+  92   1          LCD_Data(ch);
+  93   1          if(++LCD_col>15){
+  94   2            LCD_col=0;
+  95   2            if(++LCD_line>1) LCD_line=0;
+  96   2            LCD_SetPos (LCD_line, LCD_col);
+  97   2          }
+  98   1      }
+  99          
+ 100          // afiseaza un sir de caractere
+ 101          int LCD_PutStr(unsigned char line, unsigned char column, char *ptr){
+ 102   1        if(LCD_SetPos(line, column)){
+ 103   2          while(*ptr)
+ 104   2            LCD_Putch(*ptr++);
+ 105   2          return 1;
+ 106   2        }
+ 107   1        else return 0;
+ 108   1      }
+ 109          
+ 110          // sterge LCD, cursor (0,0)
+ 111          void LCD_Home(void){
+ 112   1        LCD_Cmd(CLEAR);
+ 113   1        Delay_ms (1);
+ 114   1        LCD_Cmd(HOME);
+ 115   1        Delay_ms (1);
+ 116   1        LCD_line = LCD_col =0;
+C51 COMPILER V9.59.0.0   LCD                                                               02/28/2024 20:32:39 PAGE 3   
+
+ 117   1      }
+ 118          
+ 119          //sterge LCD
+ 120          void LCD_Clear(void){
+ 121   1        LCD_Cmd(CLEAR);
+ 122   1        Delay_ms (1);
+ 123   1      }
+ 124          
+ 125          // permite/blocheaza afisarea pe LCD
+ 126          void LCD_Display(unsigned char OnOff){
+ 127   1        if(OnOff == DISPLAY_ON) LCD_Cmd(DISPLAY_ON);
+ 128   1        if(OnOff == DISPLAY_OFF) LCD_Cmd(DISPLAY_OFF);
+ 129   1        Delay_ms (1);
+ 130   1      }
+ 131          
+ 132          
+ 133          //sterge LCD
+ 134          void LCD_Shift(unsigned char val){
+ 135   1        switch(val){
+ 136   2          case SHIFT_DISPLAY_RIGHT:
+ 137   2          case SHIFT_DISPLAY_LEFT:
+ 138   2            LCD_Cmd(val);
+ 139   2            Delay_ms (1);
+ 140   2            break;
+ 141   2          
+ 142   2          case SHIFT_CURSOR_RIGHT:
+ 143   2            if(LCD_col<15) LCD_SetPos(LCD_line,LCD_col+1);
+ 144   2            break;
+ 145   2            
+ 146   2          case SHIFT_CURSOR_LEFT:
+ 147   2            if(LCD_col) LCD_SetPos(LCD_line,LCD_col-1);
+ 148   2            break;
+ 149   2        }
+ 150   1      }
+ 151          
+ 152          // sterge linia (0 sau 1)
+ 153          int LCD_DelLine(unsigned int line){
+ 154   1        if(line>1) return 0;
+ 155   1        else LCD_PutStr(line,0, "                ");
+ 156   1        LCD_SetPos(line,0);
+ 157   1        return 1;
+ 158   1      }
+ 159          
+ 160          
+ 161          // afiseaza un octet in zecimal
+ 162          int LCD_PutByte(unsigned char line, unsigned char column, unsigned char byte)
+ 163          {
+ 164   1        char i,str[3];
+ 165   1        if(LCD_SetPos(line, column)){
+ 166   2          for(i=3; i>0; i--){
+ 167   3            str[i-1] = byte % 10 + '0';
+ 168   3            byte = byte/10;
+ 169   3          }
+ 170   2          for (i=0; (i<2) && (str[i]=='0') ; i++) LCD_Putch(' ');
+ 171   2          for(; i<3; i++) LCD_Putch(str[i]);
+ 172   2          return 1; 
+ 173   2        }
+ 174   1        else return 0;
+ 175   1      }
+ 176          
+ 177          // afiseaza un cuvant de 16 biti in zecimal
+ 178          int LCD_PutWord(unsigned char line, unsigned char column, unsigned int word)
+C51 COMPILER V9.59.0.0   LCD                                                               02/28/2024 20:32:39 PAGE 4   
+
+ 179          {
+ 180   1        char i,str[5];
+ 181   1        if(LCD_SetPos(line, column)){
+ 182   2          for(i=5; i>0; i--){
+ 183   3            str[i-1] = word % 10+ '0';
+ 184   3            word = word/10;
+ 185   3          }
+ 186   2          for (i=0; (i<4) && (str[i]=='0'); i++) LCD_Putch(' ');
+ 187   2          for(; i<5; i++) LCD_Putch(str[i]);
+ 188   2          return 1; 
+ 189   2        }
+ 190   1        else return 0;
+ 191   1      }
+ 192          
+ 193          // afiseaza un octet in hexazecimal
+ 194          int LCD_PutByteHex(unsigned char line, unsigned char column, unsigned char input)
+ 195          {
+ 196   1          char temp,digit,str[2];
+ 197   1          if(LCD_SetPos(line, column)){              //go to position (x,y)
+ 198   2          for (digit=2; digit > 0; digit--) {
+ 199   3              temp = input % 0x10;
+ 200   3                if(temp <= 0x09) str[digit-1] = temp + '0';
+ 201   3                else str[digit-1] = temp - 0x0a + 'A';
+ 202   3                input = input / 0x10;
+ 203   3      
+ 204   3            }
+ 205   2          for (digit=0; digit<2; digit++) LCD_Putch(str[digit]);
+ 206   2          return 1;
+ 207   2        }
+ 208   1        else return 0;
+ 209   1      }
+ 210          
+ 211          // afiseaza un cuvant de 16 biti in hexazecimal
+ 212          int LCD_PutWordHex(unsigned char line, unsigned char column, unsigned int input)
+ 213          {
+ 214   1          char temp,digit,str[4];
+ 215   1          if(LCD_SetPos(line, column)){              //go to position (x,y)
+ 216   2          for (digit=4; digit > 0; digit--) {
+ 217   3              temp = input % 0x10;
+ 218   3                if(temp <= 0x09) str[digit-1] = temp + '0';
+ 219   3                else str[digit-1] = temp - 0x0a + 'A';
+ 220   3                input = input / 0x10;
+ 221   3      
+ 222   3            }
+ 223   2          for (digit=0; digit<4; digit++) LCD_Putch(str[digit]);
+ 224   2          return 1;
+ 225   2        }
+ 226   1        else return 0;
+ 227   1      }
+ 228          
+ 229          #if (OSC==XOSC)
+              #define COUNT_1MS 3200
+              
+              #elif (OSC==IOSC_MAX)
+ 233          #define COUNT_1MS 3000
+ 234          
+ 235          #elif (OSC==IOSC_MIN)
+              #define COUNT_1MS 400
+              #endif
+ 238          
+ 239          void Delay_ms(int ms){
+ 240   1        int i,j;
+C51 COMPILER V9.59.0.0   LCD                                                               02/28/2024 20:32:39 PAGE 5   
+
+ 241   1        for(i = ms; i > 0; i--)
+ 242   1            for (j = COUNT_1MS; j > 0; j--);    // la 25 MHz, 1 ms = 25000 / SYSCLK
+ 243   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1433    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =      2      35
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
