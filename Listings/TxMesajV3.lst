@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   TXMESAJV3                                                         02/28/2024 20:31:26 PAGE 1   
+C51 COMPILER V9.59.0.0   TXMESAJV3                                                         03/28/2024 08:31:42 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TXMESAJV3
 OBJECT MODULE PLACED IN .\Objects\TxMesajV3.obj
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE TxMesajV3.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\Include) DEB
-                    -UG OBJECTEXTEND PRINT(.\Listings\TxMesajV3.lst) TABS(2) OBJECT(.\Objects\TxMesajV3.obj)
+COMPILER INVOKED BY: D:\Facultate\Projects\KeilARM\C51\BIN\C51.EXE TxMesajV3.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\B
+                    -IG8051\Include) DEBUG OBJECTEXTEND PRINT(.\Listings\TxMesajV3.lst) TABS(2) OBJECT(.\Objects\TxMesajV3.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   50   1                                            
   51   1                                              // pune in bufasc SC
   52   1                                              
-C51 COMPILER V9.59.0.0   TXMESAJV3                                                         02/28/2024 20:31:26 PAGE 2   
+C51 COMPILER V9.59.0.0   TXMESAJV3                                                         03/28/2024 08:31:42 PAGE 2   
 
   53   1                                              // pune in bufasc CR
   54   1                                              // pune in bufasc LF
@@ -127,7 +127,7 @@ MODULE INFORMATION:   STATIC OVERLAYABLE
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
 
-C51 COMPILER V9.59.0.0   TXMESAJV3                                                         02/28/2024 20:31:26 PAGE 3   
+C51 COMPILER V9.59.0.0   TXMESAJV3                                                         03/28/2024 08:31:42 PAGE 3   
 
 
 C51 COMPILATION COMPLETE.  5 WARNING(S),  0 ERROR(S)

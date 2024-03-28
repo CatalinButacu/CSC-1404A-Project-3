@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   KEYB                                                              02/28/2024 20:32:39 PAGE 1   
+C51 COMPILER V9.59.0.0   KEYB                                                              03/28/2024 08:31:42 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE KEYB
 OBJECT MODULE PLACED IN .\Objects\keyb.obj
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\keyb.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\I
-                    -nclude) DEBUG OBJECTEXTEND PRINT(.\Listings\keyb.lst) TABS(2) OBJECT(.\Objects\keyb.obj)
+COMPILER INVOKED BY: D:\Facultate\Projects\KeilARM\C51\BIN\C51.EXE BIG8051\Drivers\keyb.c LARGE OPTIMIZE(8,SPEED) BROWSE
+                    - INCDIR(.\BIG8051\Include) DEBUG OBJECTEXTEND PRINT(.\Listings\keyb.lst) TABS(2) OBJECT(.\Objects\keyb.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52   4              if(key_released){           // daca inainte de detectare nu era nicio tasta apasata     
   53   5                key_released = 0;           // acum este apasata o tasta
   54   5                switch(val){              // decodifica tasta apasata si pune codul ASCII in key
-C51 COMPILER V9.59.0.0   KEYB                                                              02/28/2024 20:32:39 PAGE 2   
+C51 COMPILER V9.59.0.0   KEYB                                                              03/28/2024 08:31:42 PAGE 2   
 
   55   6                  case 0x88: key = 'D'; break;    // codul tastei apasate ferm corespunde tastei "D"
   56   6                  case 0x84: key = 'C'; break;    // ...................

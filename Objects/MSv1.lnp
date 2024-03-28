@@ -6,10 +6,10 @@
 ".\Objects\uart1.obj",
 ".\Objects\lcd.obj",
 ".\Objects\keyb.obj",
-".\Objects\MS-JT.obj",
-".\Objects\TxMesajV4.obj",
-".\Objects\RxMesajV4.obj",
-".\Objects\UserIO.obj" 
+".\Objects\TxMesajV3.obj",
+".\Objects\RxMesajV3.obj",
+".\Objects\UserIO.obj",
+".\Objects\MS.obj" 
 TO ".\Objects\MSv1" 
 PRINT(".\Listings\MSv1.m51") RAMSIZE(256) 
 DISABLEWARNING (16) 

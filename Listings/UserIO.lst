@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   USERIO                                                            02/28/2024 20:32:40 PAGE 1   
+C51 COMPILER V9.59.0.0   USERIO                                                            03/28/2024 08:31:42 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE USERIO
 OBJECT MODULE PLACED IN .\Objects\UserIO.obj
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE UserIO.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\Include) DEBUG 
-                    -OBJECTEXTEND PRINT(.\Listings\UserIO.lst) TABS(2) OBJECT(.\Objects\UserIO.obj)
+COMPILER INVOKED BY: D:\Facultate\Projects\KeilARM\C51\BIN\C51.EXE UserIO.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8
+                    -051\Include) DEBUG OBJECTEXTEND PRINT(.\Listings\UserIO.lst) TABS(2) OBJECT(.\Objects\UserIO.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   50   4                    default: break;
   51   4                  }
   52   3                  break;
-C51 COMPILER V9.59.0.0   USERIO                                                            02/28/2024 20:32:40 PAGE 2   
+C51 COMPILER V9.59.0.0   USERIO                                                            03/28/2024 08:31:42 PAGE 2   
 
   53   3                        
   54   3            case 1:                         // s-a selectat nodul               
@@ -126,7 +126,7 @@ line level    source
  107          void Afisare_meniu(void){               // afisare meniu initial
  108   1        AFISARE = 1;
  109   1        UART0_Putstr("\n\rTema ");
-C51 COMPILER V9.59.0.0   USERIO                                                            02/28/2024 20:32:40 PAGE 3   
+C51 COMPILER V9.59.0.0   USERIO                                                            03/28/2024 08:31:42 PAGE 3   
 
  110   1        LCD_PutStr(0,0,"T");
  111   1        UART0_Putch(TEMA + '0');
@@ -190,7 +190,7 @@ line level    source
  166   2        }
  167   1      }
  168          
-C51 COMPILER V9.59.0.0   USERIO                                                            02/28/2024 20:32:40 PAGE 4   
+C51 COMPILER V9.59.0.0   USERIO                                                            03/28/2024 08:31:42 PAGE 4   
 
  169          //********************************************************************************************************
              -***

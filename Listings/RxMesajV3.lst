@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   RXMESAJV3                                                         02/28/2024 20:31:26 PAGE 1   
+C51 COMPILER V9.59.0.0   RXMESAJV3                                                         03/28/2024 08:31:42 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE RXMESAJV3
 OBJECT MODULE PLACED IN .\Objects\RxMesajV3.obj
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE RxMesajV3.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\Include) DEB
-                    -UG OBJECTEXTEND PRINT(.\Listings\RxMesajV3.lst) TABS(2) OBJECT(.\Objects\RxMesajV3.obj)
+COMPILER INVOKED BY: D:\Facultate\Projects\KeilARM\C51\BIN\C51.EXE RxMesajV3.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\B
+                    -IG8051\Include) DEBUG OBJECTEXTEND PRINT(.\Listings\RxMesajV3.lst) TABS(2) OBJECT(.\Objects\RxMesajV3.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   49   1        
   50   1                                              // M+S: reinitializare pointer in bufferul ASCII
   51   1                                              // M+S: initializeaza screc cu adresa HW dest
-C51 COMPILER V9.59.0.0   RXMESAJV3                                                         02/28/2024 20:31:26 PAGE 2   
+C51 COMPILER V9.59.0.0   RXMESAJV3                                                         03/28/2024 08:31:42 PAGE 2   
 
   52   1         
   53   1                                              // M+S: determina adresa HW src
@@ -126,7 +126,7 @@ line level    source
  111   1                                                  // S: determina suma de control
  112   1                                                  
  113   1                                                  
-C51 COMPILER V9.59.0.0   RXMESAJV3                                                         02/28/2024 20:31:26 PAGE 3   
+C51 COMPILER V9.59.0.0   RXMESAJV3                                                         03/28/2024 08:31:42 PAGE 3   
 
  114   1                                                    // S: mesaj corect, marcare buffer plin
  115   1                                                    

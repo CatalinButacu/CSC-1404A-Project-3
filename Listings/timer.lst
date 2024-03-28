@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   TIMER                                                             02/28/2024 20:32:39 PAGE 1   
+C51 COMPILER V9.59.0.0   TIMER                                                             03/28/2024 08:31:41 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE TIMER
 OBJECT MODULE PLACED IN .\Objects\timer.obj
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\timer.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\
-                    -Include) DEBUG OBJECTEXTEND PRINT(.\Listings\timer.lst) TABS(2) OBJECT(.\Objects\timer.obj)
+COMPILER INVOKED BY: D:\Facultate\Projects\KeilARM\C51\BIN\C51.EXE BIG8051\Drivers\timer.c LARGE OPTIMIZE(8,SPEED) BROWS
+                    -E INCDIR(.\BIG8051\Include) DEBUG OBJECTEXTEND PRINT(.\Listings\timer.lst) TABS(2) OBJECT(.\Objects\timer.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   49   1      
   50   1        SFRPAGE = TMR2_PAGE;              // Selecteaza TMR2_PAGE
   51   1      
-C51 COMPILER V9.59.0.0   TIMER                                                             02/28/2024 20:32:39 PAGE 2   
+C51 COMPILER V9.59.0.0   TIMER                                                             03/28/2024 08:31:41 PAGE 2   
 
   52   1          TMR2CN = 0x00;                      // Stop Timer2; Sterge TF2;
   53   1                                              // mod auto-reload
@@ -126,7 +126,7 @@ line level    source
  111   1         unsigned char SFRPAGE_save = SFRPAGE; // Salveaza SFRPAGE
  112   1        SFRPAGE = TMR4_PAGE;            // Selecteaza TMR4_PAGE
  113   1        
-C51 COMPILER V9.59.0.0   TIMER                                                             02/28/2024 20:32:39 PAGE 3   
+C51 COMPILER V9.59.0.0   TIMER                                                             03/28/2024 08:31:41 PAGE 3   
 
  114   1        TMR4CN = 0x00;              // TF4 EXF4 - - EXEN4 TR4 C/T4 CP/RL4 
  115   1                              // Stop Timer4; Sterge TF4;

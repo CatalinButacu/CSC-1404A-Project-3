@@ -1,10 +1,10 @@
-C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 1   
+C51 COMPILER V9.59.0.0   UART1                                                             03/28/2024 08:31:41 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE UART1
 OBJECT MODULE PLACED IN .\Objects\uart1.obj
-COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE BIG8051\Drivers\uart1.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\BIG8051\
-                    -Include) DEBUG OBJECTEXTEND PRINT(.\Listings\uart1.lst) TABS(2) OBJECT(.\Objects\uart1.obj)
+COMPILER INVOKED BY: D:\Facultate\Projects\KeilARM\C51\BIN\C51.EXE BIG8051\Drivers\uart1.c LARGE OPTIMIZE(8,SPEED) BROWS
+                    -E INCDIR(.\BIG8051\Include) DEBUG OBJECTEXTEND PRINT(.\Listings\uart1.lst) TABS(2) OBJECT(.\Objects\uart1.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52   2                      break;
   53   2      
   54   2      #elif (OSC==IOSC_MIN)
-C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 2   
+C51 COMPILER V9.59.0.0   UART1                                                             03/28/2024 08:31:41 PAGE 2   
 
                   case 9600:  TL1=TH1=0x60;
                               CKCON |= 0x10;  // Timer 1 source = SYSCLK
@@ -126,7 +126,7 @@ line level    source
  114   1       unsigned char SFRPAGE_save = SFRPAGE;  // Save the current SFRPAGE
  115   1        SFRPAGE = UART1_PAGE; 
  116   1        
-C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 3   
+C51 COMPILER V9.59.0.0   UART1                                                             03/28/2024 08:31:41 PAGE 3   
 
  117   1        do RI1 = 0;
  118   1        while(RI1);
@@ -190,7 +190,7 @@ line level    source
  176          
  177          //******************************************************************************************
  178          void UART1_MultiprocMode(unsigned char mod){  // configureaza modul multiprocesor adresa/data
-C51 COMPILER V9.59.0.0   UART1                                                             02/28/2024 20:32:39 PAGE 4   
+C51 COMPILER V9.59.0.0   UART1                                                             03/28/2024 08:31:41 PAGE 4   
 
  179   1        unsigned SFRPAGE_save = SFRPAGE; // Save the current SFRPAGE
  180   1        
